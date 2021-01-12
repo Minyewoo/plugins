@@ -56,6 +56,12 @@ class CameraInitializedEvent extends CameraEvent {
   /// The default focus mode
   final FocusMode focusMode;
 
+  /// The default iso mode
+  final IsoMode isoMode;
+
+  /// The default wb mode
+  final WbMode wbMode;
+
   /// Whether setting exposure points is supported.
   final bool exposurePointSupported;
 
@@ -75,6 +81,8 @@ class CameraInitializedEvent extends CameraEvent {
     this.exposurePointSupported = false,
     this.focusMode,
     this.focusPointSupported = false,
+    this.isoMode,
+    this. wbMode,
   ]) : super(cameraId);
 
   /// Converts the supplied [Map] to an instance of the [CameraInitializedEvent]
@@ -86,6 +94,8 @@ class CameraInitializedEvent extends CameraEvent {
         exposurePointSupported = json['exposurePointSupported'] ?? false,
         focusMode = deserializeFocusMode(json['focusMode']),
         focusPointSupported = json['focusPointSupported'] ?? false,
+        isoMode = deserializeIsoMode(json['isoMode']),
+        wbMode = deserializeWbMode(json['wbMode']),
         super(json['cameraId']);
 
   /// Converts the [CameraInitializedEvent] instance into a [Map] instance that
@@ -98,6 +108,8 @@ class CameraInitializedEvent extends CameraEvent {
         'exposurePointSupported': exposurePointSupported,
         'focusMode': serializeFocusMode(focusMode),
         'focusPointSupported': focusPointSupported,
+        'isoMode' : serializeIsoMode(isoMode),
+        'wbMode' : serializeWbMode(wbMode),
       };
 
   @override
@@ -111,7 +123,9 @@ class CameraInitializedEvent extends CameraEvent {
           exposureMode == other.exposureMode &&
           exposurePointSupported == other.exposurePointSupported &&
           focusMode == other.focusMode &&
-          focusPointSupported == other.focusPointSupported;
+          focusPointSupported == other.focusPointSupported &&
+          isoMode == other.isoMode &&
+          wbMode == other.wbMode;
 
   @override
   int get hashCode =>
@@ -121,7 +135,9 @@ class CameraInitializedEvent extends CameraEvent {
       exposureMode.hashCode ^
       exposurePointSupported.hashCode ^
       focusMode.hashCode ^
-      focusPointSupported.hashCode;
+      focusPointSupported.hashCode ^ 
+      isoMode.hashCode ^
+      wbMode.hashCode;
 }
 
 /// An event fired when the resolution preset of the camera has changed.

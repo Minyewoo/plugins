@@ -240,6 +240,16 @@ class MethodChannelCamera extends CameraPlatform {
       );
 
   @override
+  Future<void> setWbMode(int cameraId, WbMode mode) =>
+      _channel.invokeMethod<void>(
+        'setWbMode',
+        <String, dynamic>{
+          'cameraId': cameraId,
+          'mode': serializeWbMode(mode),
+        },
+      );
+
+  @override
   Future<void> setExposureMode(int cameraId, ExposureMode mode) =>
       _channel.invokeMethod<void>(
         'setExposureMode',
@@ -292,6 +302,68 @@ class MethodChannelCamera extends CameraPlatform {
         <String, dynamic>{
           'cameraId': cameraId,
           'offset': offset,
+        },
+      );
+
+  @override
+  Future<int> getMinExposureTime(int cameraId) =>
+      _channel.invokeMethod<int>(
+        'getMinExposureTime',
+        <String, dynamic>{'cameraId': cameraId},
+      );
+
+  @override
+  Future<int> getMaxExposureTime(int cameraId) =>
+      _channel.invokeMethod<int>(
+        'getMaxExposureTime',
+        <String, dynamic>{'cameraId': cameraId},
+      );
+
+  @override
+  Future<int> setExposureTime(int cameraId, int nanosecs) =>
+      _channel.invokeMethod<int>(
+        'setExposureOffset',
+        <String, dynamic>{
+          'cameraId': cameraId,
+          'nanosecs': nanosecs,
+        },
+      );
+
+  @override
+  Future<void> setIsoMode(int cameraId, IsoMode mode) =>
+      _channel.invokeMethod<void>(
+        'setIsoMode',
+        <String, dynamic>{
+          'cameraId': cameraId,
+          'mode': serializeIsoMode(mode),
+        },
+      );
+      
+  @override
+  Future<int> getMinIsoValue(int cameraId) => _channel.invokeMethod<int>(
+        'getMinIsoValue',
+        <String, dynamic>{'cameraId': cameraId},
+      );
+
+  @override
+  Future<int> getMaxIsoValue(int cameraId) => _channel.invokeMethod<int>(
+        'getMaxIsoValue',
+        <String, dynamic>{'cameraId': cameraId},
+      );
+
+  @override
+  Future<int> getIsoValueStepSize(int cameraId) => _channel.invokeMethod<int>(
+        'getIsoValueStepSize',
+        <String, dynamic>{'cameraId': cameraId},
+      );
+
+  @override
+  Future<int> setIsoValue(int cameraId, int value) =>
+      _channel.invokeMethod<int>(
+        'setIsoValue',
+        <String, dynamic>{
+          'cameraId': cameraId,
+          'value': value,
         },
       );
 

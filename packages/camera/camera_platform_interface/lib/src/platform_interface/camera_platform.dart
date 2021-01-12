@@ -10,6 +10,8 @@ import 'package:camera_platform_interface/src/events/device_event.dart';
 import 'package:camera_platform_interface/src/method_channel/method_channel_camera.dart';
 import 'package:camera_platform_interface/src/types/exposure_mode.dart';
 import 'package:camera_platform_interface/src/types/focus_mode.dart';
+import 'package:camera_platform_interface/src/types/iso_mode.dart';
+import 'package:camera_platform_interface/src/types/wb_mode.dart';
 import 'package:camera_platform_interface/src/types/image_format_group.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/services.dart';
@@ -148,6 +150,11 @@ abstract class CameraPlatform extends PlatformInterface {
     throw UnimplementedError('setFlashMode() is not implemented.');
   }
 
+  /// Sets the white balance mode for the selected camera.
+  Future<void> setWbMode(int cameraId, WbMode mode) {
+    throw UnimplementedError('setWbMode() is not implemented.');
+  }
+
   /// Sets the exposure mode for taking pictures.
   Future<void> setExposureMode(int cameraId, ExposureMode mode) {
     throw UnimplementedError('setExposureMode() is not implemented.');
@@ -188,6 +195,46 @@ abstract class CameraPlatform extends PlatformInterface {
   /// Returns the (rounded) offset value that was set.
   Future<double> setExposureOffset(int cameraId, double offset) {
     throw UnimplementedError('setExposureOffset() is not implemented.');
+  }
+
+  /// Gets the minimum supported exposure time for the selected camera in nanosecs.
+  Future<int> getMinExposureTime(int cameraId) {
+    throw UnimplementedError('getMinExposureOffset() is not implemented.');
+  }
+
+  /// Gets the maximum supported exposure time for the selected camera in nanosecs.
+  Future<int> getMaxExposureTime(int cameraId) {
+    throw UnimplementedError('getMaxExposureOffset() is not implemented.');
+  }
+
+  /// Sets the exposure time for the selected camera.
+  Future<int> setExposureTime(int cameraId, int nanosecs) {
+    throw UnimplementedError('setExposureOffset() is not implemented.');
+  }
+
+  /// Sets the iso mode for taking pictures.
+  Future<void> setIsoMode(int cameraId, IsoMode mode) {
+    throw UnimplementedError('setIsoMode() is not implemented.');
+  }
+
+    /// Gets the minimum supported iso value for the selected camera.
+  Future<int> getMinIsoValue(int cameraId) {
+    throw UnimplementedError('getMinIsoValue() is not implemented.');
+  }
+
+  /// Gets the maximum supported iso value for the selected camera.
+  Future<int> getMaxIsoValue(int cameraId) {
+    throw UnimplementedError('getMaxIsoValue() is not implemented.');
+  }
+
+  /// Gets the supported step size for iso value for the selected camera.
+  Future<int> getIsoValueStepSize(int cameraId) {
+    throw UnimplementedError('getMinIsoValue() is not implemented.');
+  }
+
+  /// Sets the iso value for the selected camera.
+  Future<int> setIsoValue(int cameraId, int value) {
+    throw UnimplementedError('setIsoValue() is not implemented.');
   }
 
   /// Sets the focus mode for taking pictures.

@@ -17,6 +17,8 @@ import io.flutter.plugins.camera.CameraPermissions.PermissionsRegistry;
 import io.flutter.plugins.camera.types.ExposureMode;
 import io.flutter.plugins.camera.types.FlashMode;
 import io.flutter.plugins.camera.types.FocusMode;
+import io.flutter.plugins.camera.types.WbMode;
+import io.flutter.plugins.camera.types.IsoMode;
 import io.flutter.view.TextureRegistry;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,6 +146,21 @@ final class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
           }
           break;
         }
+      case "setWbMode":
+        {
+          String modeStr = call.argument("mode");
+          WbMode mode = WbMode.getValueForString(modeStr);
+          if (mode == null) {
+            result.error("setWbModeFailed", "Unknown wb mode " + modeStr, null);
+            return;
+          }
+          try {
+            camera.setWbMode(result, mode);
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
       case "setExposureMode":
         {
           String modeStr = call.argument("mode");
@@ -206,6 +223,84 @@ final class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
         {
           try {
             camera.setExposureOffset(result, call.argument("offset"));
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "getMinExposureTime":
+        {
+          try {
+            result.success(camera.getMinExposureTime());
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "getMaxExposureTime":
+        {
+          try {
+            result.success(camera.getMaxExposureTime());
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "setExposureTime":
+        {
+          try {
+            camera.setExposureTime(result, call.argument("nanosecs"));
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "setIsoMode":
+        {
+          String modeStr = call.argument("mode");
+          IsoMode mode = IsoMode.getValueForString(modeStr);
+          if (mode == null) {
+            result.error("setIsoModeFailed", "Unknown iso mode " + modeStr, null);
+            return;
+          }
+          try {
+            camera.setIsoMode(result, mode);
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "getMinIsoValue":
+        {
+          try {
+            result.success(camera.getMinIsoValue());
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "getMaxIsoValue":
+        {
+          try {
+            result.success(camera.getMaxIsoValue());
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "getIsoValueStepSize":
+        {
+          try {
+            result.success(camera.getIsoValueStepSize());
+          } catch (Exception e) {
+            handleException(e, result);
+          }
+          break;
+        }
+      case "setIsoValue":
+        {
+          try {
+            camera.setIsoValue(result, call.argument("value"));
           } catch (Exception e) {
             handleException(e, result);
           }

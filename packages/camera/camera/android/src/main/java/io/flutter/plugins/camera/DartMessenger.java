@@ -10,6 +10,8 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.camera.types.ExposureMode;
 import io.flutter.plugins.camera.types.FocusMode;
+import io.flutter.plugins.camera.types.IsoMode;
+import io.flutter.plugins.camera.types.WbMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +33,8 @@ class DartMessenger {
       Integer previewHeight,
       ExposureMode exposureMode,
       FocusMode focusMode,
+      IsoMode isoMode,
+      WbMode wbMode,
       Boolean exposurePointSupported,
       Boolean focusPointSupported) {
     assert (previewWidth != null);
@@ -47,6 +51,8 @@ class DartMessenger {
             put("previewHeight", previewHeight.doubleValue());
             put("exposureMode", exposureMode.toString());
             put("focusMode", focusMode.toString());
+            put("isoMode", isoMode.toString());
+            put("wbMode", wbMode.toString());
             put("exposurePointSupported", exposurePointSupported);
             put("focusPointSupported", focusPointSupported);
           }

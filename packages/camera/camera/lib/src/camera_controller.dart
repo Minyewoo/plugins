@@ -41,6 +41,8 @@ class CameraValue {
     this.flashMode,
     this.exposureMode,
     this.focusMode,
+    this.isoMode,
+    this.wbMode,
     this.exposurePointSupported,
     this.focusPointSupported,
   }) : _isRecordingPaused = isRecordingPaused;
@@ -105,6 +107,12 @@ class CameraValue {
   /// The focus mode the camera is currently set to.
   final FocusMode focusMode;
 
+  /// The iso mode the camera is currently set to.
+  final IsoMode isoMode;
+
+  /// The white balance mode the camera is currently set to.
+  final WbMode wbMode;
+
   /// Whether setting the exposure point is supported.
   final bool exposurePointSupported;
 
@@ -126,6 +134,8 @@ class CameraValue {
     FlashMode flashMode,
     ExposureMode exposureMode,
     FocusMode focusMode,
+    IsoMode isoMode,
+    WbMode wbMode,
     bool exposurePointSupported,
     bool focusPointSupported,
   }) {
@@ -140,6 +150,8 @@ class CameraValue {
       flashMode: flashMode ?? this.flashMode,
       exposureMode: exposureMode ?? this.exposureMode,
       focusMode: focusMode ?? this.focusMode,
+      isoMode: isoMode ?? this.isoMode,
+      wbMode: wbMode ?? this.wbMode,
       exposurePointSupported:
           exposurePointSupported ?? this.exposurePointSupported,
       focusPointSupported: focusPointSupported ?? this.focusPointSupported,
@@ -157,6 +169,8 @@ class CameraValue {
         'flashMode: $flashMode, '
         'exposureMode: $exposureMode, '
         'focusMode: $focusMode, '
+        'isoMode: $isoMode, '
+        'wbMode: $wbMode, '
         'exposurePointSupported: $exposurePointSupported, '
         'focusPointSupported: $focusPointSupported)';
   }
@@ -254,6 +268,9 @@ class CameraController extends ValueNotifier<CameraValue> {
             .then((event) => event.exposureMode),
         focusMode:
             await _initializeCompleter.future.then((event) => event.focusMode),
+        wbMode:
+            await _initializeCompleter.future.then((event) => event.wbMode),
+        
         exposurePointSupported: await _initializeCompleter.future
             .then((event) => event.exposurePointSupported),
         focusPointSupported: await _initializeCompleter.future
@@ -587,6 +604,16 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
   }
 
+  /// Sets the white balance mode for taking pictures.
+  Future<void> setWbMode(WbMode mode) async {
+    try {
+      await CameraPlatform.instance.setWbMode(_cameraId, mode);
+      value = value.copyWith(wbMode: mode);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
   /// Sets the exposure mode for taking pictures.
   Future<void> setExposureMode(ExposureMode mode) async {
     try {
@@ -713,6 +740,147 @@ class CameraController extends ValueNotifier<CameraValue> {
 
     try {
       return CameraPlatform.instance.setExposureOffset(_cameraId, offset);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Gets the minimum supported exposure time for the selected camera in EV units.
+  Future<int> getMinExposureTime() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'getMinExposureOffset was called on uninitialized CameraController',
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.getMinExposureTime(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Gets the maximum supported exposure time for the selected camera in EV units.
+  Future<int> getMaxExposureTime() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'getMaxExposureOffset was called on uninitialized CameraController',
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.getMaxExposureTime(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  Future<int> setExposureTime(int nanosecs) async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'setIsoValue was called on uninitialized CameraController',
+      );
+    }
+
+    // Check if offset is in range
+    List<int> range = await Future.wait([getMinExposureTime(), getMaxExposureTime()]);
+    if (nanosecs < range[0] || nanosecs > range[1]) {
+      throw CameraException(
+        "setIsoValue",
+        "The provided exposure offset was outside the supported range for this device.",
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.setExposureTime(_cameraId, nanosecs);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Sets the exposure mode for taking pictures.
+  Future<void> setIsoMode(IsoMode mode) async {
+    try {
+      await CameraPlatform.instance.setIsoMode(_cameraId, mode);
+      value = value.copyWith(isoMode: mode);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Gets the minimum supported exposure offset for the selected camera in EV units.
+  Future<int> getMinIsoValue() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'setIsoMode was called on uninitialized CameraController',
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.getMinIsoValue(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Gets the maximum supported exposure offset for the selected camera in EV units.
+  Future<int> getMaxIsoValue() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'getMaxIsoValue was called on uninitialized CameraController',
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.getMaxIsoValue(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Gets the supported step size for exposure offset for the selected camera in EV units.
+  ///
+  /// Returns 0 when the camera supports using a free value without stepping.
+  Future<double> getIsoValueStepSize() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'getIsoValueStepSize was called on uninitialized CameraController',
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.getExposureOffsetStepSize(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  ////// Sets the sensor sensetivity value for the selected camera.
+  Future<int> setIsoValue(int sensetivity) async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'setIsoValue was called on uninitialized CameraController',
+      );
+    }
+
+    // Check if offset is in range
+    List<int> range = await Future.wait([getMinIsoValue(), getMaxIsoValue()]);
+    if (sensetivity < range[0] || sensetivity > range[1]) {
+      throw CameraException(
+        "setIsoValue",
+        "The provided exposure offset was outside the supported range for this device.",
+      );
+    }
+
+    try {
+      return CameraPlatform.instance.setIsoValue(_cameraId, sensetivity);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }

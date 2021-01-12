@@ -52,6 +52,8 @@ import io.flutter.plugins.camera.media.MediaRecorderBuilder;
 import io.flutter.plugins.camera.types.ExposureMode;
 import io.flutter.plugins.camera.types.FlashMode;
 import io.flutter.plugins.camera.types.FocusMode;
+import io.flutter.plugins.camera.types.IsoMode;
+import io.flutter.plugins.camera.types.WbMode;
 import io.flutter.plugins.camera.types.ResolutionPreset;
 import io.flutter.view.TextureRegistry.SurfaceTextureEntry;
 import java.io.File;
@@ -101,9 +103,13 @@ public class Camera {
   private FlashMode flashMode;
   private ExposureMode exposureMode;
   private FocusMode focusMode;
+  private IsoMode isoMode;
+  private WbMode wbMode;
   private PictureCaptureRequest pictureCaptureRequest;
   private CameraRegions cameraRegions;
   private int exposureOffset;
+  private long exposureTime;
+  private int isoValue;
   private boolean useAutoFocus = true;
   private Range<Integer> fpsRange;
 
@@ -135,7 +141,10 @@ public class Camera {
     this.flashMode = FlashMode.auto;
     this.exposureMode = ExposureMode.auto;
     this.focusMode = FocusMode.auto;
+    this.isoMode = IsoMode.auto;
+    this.wbMode = WbMode.auto;
     this.exposureOffset = 0;
+    this.isoValue = 200;
     orientationEventListener =
         new OrientationEventListener(activity.getApplicationContext()) {
           @Override
@@ -229,6 +238,8 @@ public class Camera {
                   previewSize.getHeight(),
                   exposureMode,
                   focusMode,
+                  isoMode,
+                  wbMode,
                   isExposurePointSupported(),
                   isFocusPointSupported());
             } catch (CameraAccessException e) {
@@ -321,6 +332,8 @@ public class Camera {
             updateFocus(focusMode);
             updateFlash(flashMode);
             updateExposure(exposureMode);
+            updateIso(isoMode);
+            updateWb(wbMode);
 
             refreshPreviewCaptureSession(
                 onSuccessCallback, (code, message) -> dartMessenger.sendCameraErrorEvent(message));
@@ -787,6 +800,22 @@ public class Camera {
         () -> result.success(null), (code, message) -> result.error("CameraAccess", message, null));
   }
 
+  public void setWbMode(@NonNull final Result result, WbMode mode)
+      throws CameraAccessException {
+    this.wbMode = mode;
+    updateWb(mode);
+    cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+    result.success(null);
+  }
+
+  public void setIsoMode(@NonNull final Result result, IsoMode mode)
+      throws CameraAccessException {
+    this.isoMode = mode;
+    updateIso(mode);
+    cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+    result.success(null);
+  }
+
   public void setFocusMode(@NonNull final Result result, FocusMode mode)
       throws CameraAccessException {
     this.focusMode = mode;
@@ -916,6 +945,22 @@ public class Camera {
     return maxStepped * stepSize;
   }
 
+  public Long getMinExposureTime() throws CameraAccessException {
+    Range<Long> range =
+        cameraManager
+            .getCameraCharacteristics(cameraDevice.getId())
+            .get(CameraMetadata.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+    return range == null ? 0 : range.getLower();
+  }
+
+  public long getMaxExposureTime() throws CameraAccessException {
+    Range<Long> range =
+        cameraManager
+            .getCameraCharacteristics(cameraDevice.getId())
+            .get(CameraMetadata.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+    return range == null ? 0 : range.getUpper();
+  }
+
   public double getExposureOffsetStepSize() throws CameraAccessException {
     Rational stepSize =
         cameraManager
@@ -933,6 +978,47 @@ public class Camera {
     updateExposure(exposureMode);
     this.cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
     result.success(offset);
+  }
+
+  public void setExposureTime(@NonNull final Result result, Long nanosecs)
+      throws CameraAccessException {
+    // Set the exposure time
+    exposureTime = nanosecs;
+    // Apply it
+    updateExposureTime(exposureMode);
+    this.cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+    result.success(offset);
+  }
+
+  public int getIsoValueStepSize() throws CameraAccessException {
+    return 100;
+  }
+
+  public int getMinIsoValue() throws CameraAccessException {
+    Range<Integer> range =
+        cameraManager
+            .getCameraCharacteristics(cameraDevice.getId())
+            .get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+    return range == null ? 0 : range.getLower();
+  }
+
+  public int getMaxIsoValue() throws CameraAccessException {
+    Range<Integer> range =
+        cameraManager
+            .getCameraCharacteristics(cameraDevice.getId())
+            .get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+    return range == null ? 0 : range.getUpper();
+  }
+
+  public void setIsoValue(@NonNull final Result result, int value)
+      throws CameraAccessException {
+    // Set the exposure offset
+    //double stepSize = getExposureOffsetStepSize();
+    isoValue = value;
+    // Apply it
+    updateIso(isoMode);
+    this.cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+    result.success(value);
   }
 
   public float getMaxZoomLevel() {
@@ -1032,6 +1118,78 @@ public class Camera {
     }
 
     captureRequestBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, exposureOffset);
+  }
+
+  private void updateExposureTime(ExposureMode mode) {
+    exposureMode = mode;
+
+    switch (mode) {
+      case locked:
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
+        break;
+      case auto:
+      default:
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+        break;
+    }
+
+    captureRequestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, exposureTime);
+  }
+
+  private void updateIso(IsoMode mode) {
+    isoMode = mode;
+
+    switch (mode) {
+      case locked:
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
+        break;
+      case auto:
+      default:
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+        break;
+    }
+
+    captureRequestBuilder.set(CaptureRequest.SENSOR_SENSITIVITY, isoValue);
+  }
+
+  private void updateWb(WbMode mode) {
+    wbMode = mode;
+
+    switch (wbMode) {
+      case incandescent:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT);
+      break;
+      case fluorescent:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_FLUORESCENT);
+      break;
+      case warm_fluorescent:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_WARM_FLUORESCENT);
+      break;
+      case daylight:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_DAYLIGHT);
+      break;
+      case cloudy_daylight:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT);
+      break;
+      case twilight:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_TWILIGHT);
+      break;
+      case shade:
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_SHADE);
+      break;
+      case auto:
+      default:
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_AUTO);
+        //captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, false);
+        break;
+    }
   }
 
   private void updateFlash(FlashMode mode) {
