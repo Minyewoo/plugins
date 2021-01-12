@@ -945,11 +945,11 @@ public class Camera {
     return maxStepped * stepSize;
   }
 
-  public Long getMinExposureTime() throws CameraAccessException {
+  public long getMinExposureTime() throws CameraAccessException {
     Range<Long> range =
         cameraManager
             .getCameraCharacteristics(cameraDevice.getId())
-            .get(CameraMetadata.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+            .get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
     return range == null ? 0 : range.getLower();
   }
 
@@ -957,7 +957,7 @@ public class Camera {
     Range<Long> range =
         cameraManager
             .getCameraCharacteristics(cameraDevice.getId())
-            .get(CameraMetadata.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+            .get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
     return range == null ? 0 : range.getUpper();
   }
 
