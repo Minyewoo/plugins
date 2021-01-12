@@ -987,7 +987,7 @@ public class Camera {
     // Apply it
     updateExposureTime(exposureMode);
     this.cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
-    result.success(offset);
+    result.success(nanosecs);
   }
 
   public int getIsoValueStepSize() throws CameraAccessException {
