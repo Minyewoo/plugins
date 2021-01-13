@@ -249,8 +249,7 @@ final class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
       case "setExposureTime":
         {
           try {
-            long arg = call.argument("nanosecs");
-            camera.setExposureTime(result, arg);
+            camera.setExposureTime(result, call.<long>argument("nanosecs"));
           } catch (Exception e) {
             handleException(e, result);
           }
