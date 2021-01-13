@@ -980,7 +980,7 @@ public class Camera {
     result.success(offset);
   }
 
-  public void setExposureTime(@NonNull final Result result, Long nanosecs)
+  public void setExposureTime(@NonNull final Result result, long nanosecs)
       throws CameraAccessException {
     // Set the exposure time
     exposureTime = nanosecs;
