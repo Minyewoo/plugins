@@ -322,7 +322,7 @@ class MethodChannelCamera extends CameraPlatform {
   @override
   Future<int> setExposureTime(int cameraId, int nanosecs) =>
       _channel.invokeMethod<int>(
-        'setExposureOffset',
+        'setExposureTime',
         <String, dynamic>{
           'cameraId': cameraId,
           'nanosecs': nanosecs,
