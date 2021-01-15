@@ -985,7 +985,7 @@ public class Camera {
     // Set the exposure time
     exposureTime = nanosecs;
     // Apply it
-    updateExposureTime(exposureMode);
+    updateExposureTime(isoMode);
     this.cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
     result.success(nanosecs);
   }
