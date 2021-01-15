@@ -1120,8 +1120,8 @@ public class Camera {
     captureRequestBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, exposureOffset);
   }
 
-  private void updateExposureTime(ExposureMode mode) {
-    exposureMode = mode;
+  private void updateExposureTime(IsoMode mode) {
+    isoMode = mode;
 
     switch (mode) {
       case locked:
